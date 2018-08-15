@@ -129,3 +129,4 @@ systemctl restart firewalld.service
 nohup  start.sh  >> output.log 2>&1 &
 nohup  /root/jupyterNotebook/start.sh  >> /root/jupyterNotebook/output.log 2>&1 &
 
+ 
