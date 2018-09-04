@@ -101,3 +101,6 @@ os.remove("D:\\page\\foo2.txt")
 #改变当前目录
 
 #删除目录
+
+a=['a','a','a,']
+print a.__sizeof__

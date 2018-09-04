@@ -8,6 +8,12 @@ pyenv就是这样一个Python版本管理器，除此之外，还可以使用vir
 使用vm虚拟机安装centos7系统
   1)默认安装方式使用NAT网络连接方式  确认IP后可以直接实现宿主机和虚拟机的互联，也能直接连接互联网
   2)在centos安装配置界面中的软件选择界面，需要选择带有GHOME界面的配置，否则安装后的系统是不带界面的，使用不便
+  3)当vm中的centos自动更新系统后，有可能导致网卡ens33不可用的问题，主要表现为 `service network restart` 报错
+  这时需要执行以下命令以恢复：
+  `systemctl stop NetworkManager`
+  `systemctl disable NetworkManager`
+  重新启动网络：
+  `systemctl start network.service`
 ## 1.相关依赖软件安装
   1)安装GCC  
 `yum install gcc`

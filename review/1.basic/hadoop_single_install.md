@@ -22,7 +22,7 @@
      tar -zxvf protobuf-2.5.0.tar.gz  到  /root/soft
      
     $ cd  /root/soft/protobuf-2.5.0
-    $ ./configure --prefix=/root/soft/protobuf-2.5.0
+    $ ./configure --prefix=/root/soft/protobuf-2.5.0    
     $ make
     $ make check
     $ make clean
