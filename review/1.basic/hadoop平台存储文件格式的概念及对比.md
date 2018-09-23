@@ -1,3 +1,4 @@
+
 # 背景
 在实施大数据平台项目或直接说hadoop平台类的项目时，开发设计人员总会对"文件格式"感到困惑，不知道该如何理解和使用。常见的问题有以下几种：
 1. hdfs支持哪些文件格式？
@@ -29,15 +30,22 @@ _在使用时，读记录尽量涉及到的block最少，这样读取需要的�
 _读取全量数据的操作 性能可能比sequencefile没有明显的优势。_
 # Apache Orc 和Apache Parquet
 这两种是hive发展过程中出现的存储格式并发展为Apache独立顶级项目。
-Orc是从HIVE的原生格式RCFILE优化改进而来。
-Parquet是Cloudera公司研发并开源的格式。
+* Orc是从HIVE的原生格式RCFILE优化改进而来。
+* Parquet是Cloudera公司研发并开源的格式。
+
 这两者都属于列存储格式，但Orc严格上应该算是行列混合存储，首先根据行组分割整个表，在每一个行组内进行按列存储。
 Parquet文件和Orc文件都是是自解析的，文件中包括该文件的数据和元数据，Orc的元数据使用Protocol Buffers序列化。
-两者都支持嵌套数据格式（struct\map\list），但策略不同。
-Parquet支持嵌套的数据模型，类似于Protocol Buffers，每一个数据模型的schema包含多个字段，每一个字段有三个属性：重复次数、数据类型和字段名。和Parquet不同，ORC原生是不支持嵌套数据格式的，而是通过对复杂数据类型特殊处理的方式实现嵌套格式的支持。
-压缩：两者都相比txt格式进行了数据压缩，相比而言，Orc的压缩比例更大，效果更好
-计算引擎支持：都支持spark、MR计算引擎
-查询引擎支持：Parquet被Spark SQL、Hive、Impala、Drill等支持，而Orc被Spark SQL、Presto、Hive支持，Orc不被Impala支持
+两者都支持嵌套数据格式（struct\map\list），但策略不同：
+* Parquet支持嵌套的数据模型，类似于Protocol Buffers，每一个数据模型的schema包含多个字段，每一个字段有三个属性：重复次数、数据类型和字段名。
+* ORC原生是不支持嵌套数据格式的，而是通过对复杂数据类型特殊处理的方式实现嵌套格式的支持。
+
+压缩：
+两者都相比txt格式进行了数据压缩，相比而言，Orc的压缩比例更大，效果更好。
+
+计算引擎支持：都支持spark、MR计算引擎。
+
+查询引擎支持：Parquet被Spark SQL、Hive、Impala、Drill等支持，而Orc被Spark SQL、Presto、Hive支持，Orc不被Impala支持。
+
 功能及性能对比：
 使用TPC-DS数据集并且对它进行改造以生成宽表、嵌套和多层嵌套的数据。使用最常用的Hive作为SQL引擎进行测试
 最终表现：
@@ -50,16 +58,22 @@ Parquet支持嵌套的数据模型，类似于Protocol Buffers，每一个数据
 * 单表查询 orc快一点点点
 * 带有复杂数据构成的表查询 （1层） orc更快
 * 带有复杂数据构成的表查询  （3层） orc更快
+
 结果分析
 从上述测试结果来看，星状模型对于数据分析场景并不是很合适，多个表的join会大大拖慢查询速度，并且不能很好的利用列式存储带来的性能提升，在使用宽表的情况下，列式存储的性能提升明显，ORC文件格式在存储空间上要远优于Text格式，较之于PARQUET格式有一倍的存储空间提升，在导数据（insert into table select 这样的方式）方面ORC格式也要优于PARQUET，在最终的查询性能上可以看到，无论是无嵌套的扁平式宽表，或是一层嵌套表，还是多层嵌套的宽表，两者的查询性能相差不多，较之于Text格式有2到3倍左右的提升。
 另外，扁平式的表结构要比嵌套式结构的查询性能有所提升，所以如果选择使用大宽表，则设计宽表的时候尽可能的将表设计的扁平化，减少嵌套数据。
-通过测试对比，ORC文件存储格式无论是在空间存储、导数据速度还是查询速度上表现的都较好一些，并且ORC可以一定程度上支持ACID操作，社区的发展目前也是Hive中比较提倡使用的一种列式存储格式，另外，本次测试主要针对的是Hive引擎，所以不排除存在Hive与ORC的敏感度比PARQUET要高的可能性。Parquet更多的是在Impala环境下使用
+通过测试对比，ORC文件存储格式无论是在空间存储、导数据速度还是查询速度上表现的都较好一些，并且ORC可以一定程度上支持ACID操作，社区的发展目前也是Hive中比较提倡使用的一种列式存储格式，另外，本次测试主要针对的是Hive引擎，所以不排除存在Hive与ORC的敏感度比PARQUET要高的可能性。Parquet更多的是在Impala环境下使用[图片上传失败...(image-a4baa-1537673554146)]
+
+![图片2.png](https://upload-images.jianshu.io/upload_images/13323529-c29f6c62a9cc484b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
 # kudu是什么？
 Apache Kudu是由Cloudera开源的存储引擎，可以同时提供低延迟的随机读写和高效的数据分析能力。Kudu支持水平扩展，使用Raft协议进行一致性保证，并且与Cloudera Impala和Apache Spark等当前流行的大数据查询和分析工具结合紧密。 
 现在提起大数据存储，我们能想到的技术有很多，比如HDFS，以及在HDFS上的列式存储技术Apache Parquet，Apache ORC，还有以KV形式存储半结构化数据的Apache HBase和Apache Cassandra等等。既然有了如此多的存储技术，Cloudera公司为什么要开发出一款全新的存储引擎Kudu呢？
 对于会被用来进行分析的静态数据集来说，使用Parquet或者ORC存储是一种明智的选择。但是目前的列式存储技术都不能更新数据（补充：ORC是可以的），而且随机读写性能感人。而可以进行高效随机读写的HBase、Cassandra等数据库，却并不适用于基于SQL的数据分析方向。所以现在的企业中，经常会存储两套数据分别用于实时读写与数据分析，先将数据写入HBase中，再定期通过ETL到Parquet进行数据同步（该使用场景与常见金融hadoop平台的流程并不太一致）。
 关键词： 随机访问 
 基于HDFS的存储技术，比如Parquet，具有高吞吐量连续读取数据的能力；而HBase和Cassandra等技术适用于低延迟的随机读写场景，那么有没有一种技术可以同时具备这两种优点呢？Kudu提供了一种“happy medium”的选择：
+![场景选择](https://upload-images.jianshu.io/upload_images/13323529-802cc92d97fed145.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
 Kudu不但提供了行级的插入、更新、删除API，同时也提供了接近Parquet性能的批量扫描操作。使用同一份存储，既可以进行随机读写，也可以满足数据分析的要求。
 ## kudu总览
 ### Tables和Schemas
@@ -91,6 +105,8 @@ Kudu为用户提供了两种一致性模型。
 在client之间传播timestamp token。在一个client完成一次写入后，会得到一个timestamp token，然后这个client把这个token传播到其他client，这样其他client就可以通过token取到数据了。不过这个方式的复杂度很高。
 通过commit-wait方式，这有些类似于Google的Spanner。但是目前基于NTP的commit-wait方式延迟实在有点高。不过Kudu相信，随着Spanner的出现，未来几年内基于real-time clock的技术将会逐渐成熟。
 ### Kudu的架构
+![KUDU架构](https://upload-images.jianshu.io/upload_images/13323529-933c7bb6979ddd08.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
 Kudu使用单个的Master节点，用来管理集群的元数据，并且使用任意数量的Tablet Server节点用来存储实际数据。
 Master
 Kudu的master节点负责整个集群的元数据管理和服务协调。它承担着以下功能：
