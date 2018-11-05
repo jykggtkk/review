@@ -1,4 +1,6 @@
 #!/bin/bash
+#依赖python pycrypt模块  安装这个模块的命令是 python setup.py install 
+#系统必须现安装yum install python-devel
 #测试加解密程序
 #c3VubGluZW1kcDIwMTgxMQ== 是对 sunlinemdp201811 进行base64编码后的值 可以修改  方法为：
 # 1.命令行执行 python 进入python编程环境
