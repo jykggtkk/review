@@ -1,4 +1,5 @@
 #!/bin/bash
+
 #依赖python pycrypt模块  安装这个模块的命令是 python setup.py install 
 #系统必须现安装yum install python-devel
 #测试加解密程序

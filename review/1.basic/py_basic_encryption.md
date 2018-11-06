@@ -65,80 +65,33 @@ win32com是python操作windows程序的第三方包，放在服务器上使用�
 
 # 3.方法三 PyCrypto
 一个极好的用于信息安全的python库，包括所有主流算法。
-#### crypto库的模块结构
-* Crypto.Cipher: Symmetric- and asymmetric-key encryption algorithms. 
-   >Crypto.Cipher.AES: AES symmetric cipher
-   >Crypto.Cipher.ARC2: RC2 symmetric cipher
-   >Crypto.Cipher.ARC4: ARC4 symmetric cipher
-   >Crypto.Cipher.Blowfish: Blowfish symmetric cipher
-   >Crypto.Cipher.CAST: CAST-128 symmetric cipher
-   >Crypto.Cipher.DES: DES symmetric cipher
-   >Crypto.Cipher.DES3: Triple DES symmetric cipher
-   >Crypto.Cipher.PKCS1_OAEP: RSA encryption protocol according to PKCS#1 OAEP
-   >Crypto.Cipher.PKCS1_v1_5: RSA encryption protocol according to PKCS#1 v1.5
-   >Crypto.Cipher.XOR: XOR toy cipher
-   >Crypto.Cipher.blockalgo: Module with definitions common to all block ciphers.
-* Crypto.Hash: Hashing algorithms
-   >Crypto.Hash.HMAC: HMAC (Hash-based Message Authentication Code) algorithm
-   >Crypto.Hash.MD2: MD2 cryptographic hash algorithm.
-   >Crypto.Hash.MD4: MD4 cryptographic hash algorithm.
-   >Crypto.Hash.MD5: MD5 cryptographic hash algorithm.
-   >Crypto.Hash.RIPEMD: RIPEMD-160 cryptographic hash algorithm.
-   >Crypto.Hash.SHA: SHA-1 cryptographic hash algorithm.
-   >Crypto.Hash.SHA224: SHA-224 cryptographic hash algorithm.
-   >Crypto.Hash.SHA256: SHA-256 cryptographic hash algorithm.
-   >Crypto.Hash.SHA384: SHA-384 cryptographic hash algorithm.
-   >Crypto.Hash.SHA512: SHA-512 cryptographic hash algorithm.
-   >Crypto.Hash.hashalgo
-* Crypto.Protocol: Cryptographic protocols
-   >Crypto.Protocol.AllOrNothing: This file implements all-or-nothing package transformations.
-   >Crypto.Protocol.Chaffing: This file implements the chaffing algorithm.
-   >Crypto.Protocol.KDF: This file contains a collection of standard key derivation functions.
-* Crypto.PublicKey: Public-key encryption and signature algorithms.
-   >Crypto.PublicKey.DSA: DSA public-key signature algorithm.
-   >Crypto.PublicKey.ElGamal: ElGamal public-key algorithm (randomized encryption and signature).
-   >Crypto.PublicKey.RSA: RSA public-key cryptography algorithm (signature and encryption).
-* Crypto.Random
-   >Crypto.Random.Fortuna
-   >Crypto.Random.Fortuna.FortunaAccumulator
-   >Crypto.Random.Fortuna.FortunaGenerator
-   >Crypto.Random.Fortuna.SHAd256: SHA_d-256 hash function implementation.
-   >Crypto.Random.OSRNG: Provides a platform-independent interface to the random number generators supplied by various operating systems.
-   >Crypto.Random.OSRNG.fallback
-   >Crypto.Random.OSRNG.nt
-   >Crypto.Random.OSRNG.posix
-   >Crypto.Random.OSRNG.rng_base
-   >Crypto.Random._UserFriendlyRNG
-   >Crypto.Random.random: A cryptographically strong version of Python's standard "random" module.
-* Crypto.Signature: Digital signature protocols
-   >Crypto.Signature.PKCS1_PSS: RSA digital signature protocol with appendix according to PKCS#1 PSS.
-   >Crypto.Signature.PKCS1_v1_5: RSA digital signature protocol according to PKCS#1 v1.5
-* Crypto.Util: Miscellaneous modules
-   >Crypto.Util.Counter: Fast counter functions for CTR cipher modes.
-   >Crypto.Util.RFC1751
-   >Crypto.Util._counter
-   >Crypto.Util._number_new
-   >Crypto.Util.asn1
-   >Crypto.Util.number
-   >Crypto.Util.py21compat: Compatibility code for Python 2.1
-   >Crypto.Util.py3compat: Compatibility code for handling string/bytes changes from Python 2.x to Py3k
-   >Crypto.Util.randpool
-   >Crypto.Util.strxor
-   >Crypto.Util.winrandom
-* Crypto.pct_warnings
-
-对于服务器配置文件加密，不需要复杂的公钥方式，使用对称密钥算法AES足够满足我们的需求。
+具体可以参考：
+附[pycrypto调用方法](https://www.dlitz.net/software/pycrypto/api/current/)
 
 ## 服务器文件加密实现
 现在假定要对一个存储各类ip、账户、密码的global.properties文件进行加密，同时，支持在读取时进行解密。
 global.properties的内容假定如下图所示：
 ```
-bgp.inceptor.in1.ip=10.22.179.13
-bgp.inceptor.in1.default=cmr
-bgp.inceptor.in2.ip=10.22.179.14
-bgp.inceptor.in2.default=default
-bdp.ldap.mdp.username=mdp
-bdp.ldap.mdp.password=mdp
+#ORACLE
+database.ora10g.type=ORACLE
+database.ora10g.name=ora10g
+database.ora10g.ip=192.168.1.113
+database.ora10g.port=10000
+database.ora10g.username=dw
+database.ora10g.password=Oracle
+#HIVE
+database.cm.type=HIVE
+database.cm.name=cmr
+database.cm.ip=192.168.1.113
+database.cm.port=10000
+database.cm.username=mdp
+database.cm.password=mdp
+#OS
+server.host.type=LINUX
+server.host.ip=192.168.1.113
+server.host.port=22
+server.host.username=dw
+server.host.password=dw
 ```
 每一行使用等号将信息分为两段，等号左边是信息项名称，等号右边是信息项具体的内容，我们要对信息项的具体的内容进行加密。
 首先做需求分析，我们的需求可以拆分为以下几个：
@@ -150,7 +103,7 @@ bdp.ldap.mdp.password=mdp
 基本功能包括：    
 2. 加密解密      
 3. 获取文件
-4. 文件指定内容读取  #https://blog.csdn.net/tengxing007/article/details/72466187    读取properties文件
+4. 文件指定内容读取 
 5. 运行日志 --后续--
 6. 异常处理 --后续-- 
 
@@ -167,7 +120,231 @@ bdp.ldap.mdp.password=mdp
 6. 输出：  加解密文   对应功能 1 4 
 7. 输出：  文件路径及名称  对应功能 2 3 
 
- 
+第三步，首先根据他人提供的方法做了一个对具体字符串进行加解密的类，唯一多做的处理就是对加密使用的密钥多了一个base64编码的过程，文件保存为optcrypt.py：
+```
+#coding: utf8
+'''
+实现对指定字符串内容基于某个密钥的加解密内容输出
+密钥使用base64多加一层处理
+
+version: v0.0.1
+author:  Duwj
+date: 2018-10-24
+'''
+
+import sys
+from Crypto.Cipher import AES
+from binascii import b2a_hex, a2b_hex
+import base64
+
+class optcrypt():
+    def __init__(self, key):
+        self.key = str(base64.b64decode(key))
+        self.mode = AES.MODE_CBC
+        #self.iv = Random.new().read(AES.block_size)
+    #加密函数，如果text不是16的倍数【加密文本text必须为16的倍数！】，那就补足为16的倍数
+    def aesencrypt(self, text):
+
+        #密钥key 长度必须为16（AES-128）、24（AES-192）、或32（AES-256）Bytes 长度.目前AES-128足够用
+        cipher = AES.new(self.key, self.mode, self.key)
+        #cipher=AES.new(bytes(self.key), self.mode,Random.new().read(AES.block_size))
+
+        #加密文本text必须为16的倍数
+        add = 16 - (len(text) % 16)
+        text = text + ('\0' * (16 - (len(text) % 16)))
+        self.ciphertext = cipher.encrypt(text)
+        #因为AES加密时候得到的字符串不一定是ascii字符集的，输出到终端或者保存时候可能存在问题
+        #所以这里统一把加密后的字符串转化为16进制字符串
+        return b2a_hex(self.ciphertext)
+     
+    #解密   
+    def aesdecrypt(self, text):
+        cryptor = AES.new(self.key, self.mode, self.key)
+        #16进制转回后解密
+        plain_text = cryptor.decrypt(a2b_hex(text))
+
+        #rstrip()去掉补的空格
+        return plain_text.rstrip('\0')
+
+
+if __name__ == '__main__':
+    #设置环境编码
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+    #测试
+    pc = optcrypt('c3VubGluZW1kcDIwMTgxMQ==') 
+    e = pc.aesencrypt("duwj") 
+    d = pc.aesdecrypt("d518cdd30b854b84f5aa7c5511e03e38") 
+    print "info:duwj,encrypt:"+e+",decrypt:"+d      
+```
+然后就是依托这个基础的字符串加解密类，实现对字符串、文件、信息项的加解密功能，在这个过程中没有对复杂的properties结构进行解析，单纯的使用`=`实现信息项和密文内容的分离，文件保存为server.py:
+```
+#!bin/python
+#-*- coding: UTF-8 -*-
+
+'''
+脚本功能：
+         1. 实现对指定字符串内容基于某个密钥的加解密内容输出
+         2. 读取指定加密配置文件，根据信息项名称读取指定内容后加解密输出
+         3. 读取指定配置文件，对文件内每一行信息项的具体内容进行加解密后生成新的加解密后的配置文件
+
+version: v0.0.1
+author:  Duwj
+date: 2018-11-05
+'''
+
+import os
+import sys
+import getopt 
+from optcrypt import optcrypt
+
+#字符串加解密
+def stringCrpyt(func_name,value):
+    if func_name =="se":
+        crpyt_value=pc.aesencrypt(value)
+    else:
+        crpyt_value=pc.aesdecrypt(value)
+    return crpyt_value
+
+#信息项加解密输出
+def infoCrpyt(func_name,file_name,info_name):
+    value=""
+    try:
+        pro_file = open(file_name, 'Ur')
+        for line in pro_file.readlines():
+            line = line.strip().replace('\n', '')
+            if info_name == line.split('=')[0]:
+                value = line.split('=')[1]
+                #print value 
+    except Exception, e:
+         raise e
+    finally:
+        pro_file.close()
+
+    if func_name == "ie":
+        crpyt_value=pc.aesencrypt(value)
+    elif func_name=="id":
+        crpyt_value=pc.aesdecrypt(value)
+    return  crpyt_value 
+
+#文件加解密
+def fileCrpyt(func_name,file_name):
+    try:
+        read_file = open(file_name,'Ur')
+        write_file = open(file_name+"."+func_name+"crypt",'w')
+        if func_name == "fe":
+            for line in read_file.readlines():
+                line = line.strip().replace('\n', '')
+                if line=="":
+                    pass
+                elif line.find("#")!=-1:
+                    write_file.write(line+"\n")
+                else:
+                    strs=line.split('=')[0]+"="+pc.aesencrypt(line.split('=')[1])
+                    write_file.write(strs+"\n")
+        else:
+            for line in read_file.readlines():
+                line = line.strip().replace('\n', '')
+                if line.find("#")!=-1:
+                    write_file.write(line+"\n")
+                else:
+                    strs=line.split('=')[0]+"="+pc.aesdecrypt(line.split('=')[1])
+                    write_file.write(strs+"\n")
+    except Exception, e:
+         raise e
+    finally:
+        read_file.close()
+        write_file.close()
+    return file_name+"."+func_name+"crypt"
+
+if __name__ == "__main__":
+    #设置环境编码
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+    msg='''使用说明：python server.py 
+         -d [选择方法[se 字符串加密 /sd 字符串解密/ie 信息项加密/id 信息项解密/fe 文件加密/fd 文件加密]]  
+         -k [16位密钥]
+         -c [加密内容]
+         -f [文件名称]
+         -i [信息项名称]
+         字符串加解密必选项： -k -c 
+         信息项加解密必选项： -k -f -i
+         文件加解密必选项:    -k -f 
+         '''        
+    #获取参数
+    opts, args = getopt.getopt(sys.argv[1:], "d:k:c:f:i:")
+    if len(opts)==0:
+        print msg
+        sys.exit(0)
+
+    for op, value in opts:
+        if op == "-d":
+            func_name = value
+        elif op == "-k":
+            key_content = value
+        elif op == "-c":
+            txt_content = value
+        elif op == "-f":
+            file_name = value
+        elif op == "-i":
+            info_name = value
+    #print(opts)  
+    #初始化密钥
+    pc = optcrypt(key_content)
+    #根据功能类型执行
+    if func_name in("se","sd"):
+        print stringCrpyt(func_name,txt_content)
+    elif func_name in ("ie","id"):
+        print infoCrpyt(func_name,file_name,info_name)    
+    elif func_name in ("fe","fd"):
+        print fileCrpyt(func_name,file_name)
+    else:
+        print("there is no function named "+func_name)
+    sys.exit(0)
+
+```
+注意在项目文件夹中增加一个__init__.py文件以便于脚本能识别optcrypt模块。
+
+测试脚本test.sh：
+```
+#!/bin/bash
+
+#依赖python pycrypt模块  安装这个模块的命令是 python setup.py install 
+#系统必须现安装yum install python-devel
+#测试加解密程序
+#c3VubGluZW1kcDIwMTgxMQ== 是对 sunlinemdp201811 进行base64编码后的值 可以修改  方法为：
+# 1.命令行执行 python 进入python编程环境
+# 2.执行以下代码 
+# import base64
+# print s= base64.b64encode("sunlinemdp201811")    # 引号内为想编码的密钥文本
+
+#帮助
+python server.py
+#字符串加密
+python server.py -d se -k c3VubGluZW1kcDIwMTgxMQ== -c sunline
+#字符串解密
+python server.py -d sd -k c3VubGluZW1kcDIwMTgxMQ== -c cd3f4a3b1c4a189d3fe985495f6f963b
+#文件加密
+python server.py -d fe   -k c3VubGluZW1kcDIwMTgxMQ==  -f global.properties
+#文件解密
+python server.py -d fd   -k c3VubGluZW1kcDIwMTgxMQ==  -f global.properties.fecrypt
+#信息项加密输出
+python server.py -d ie  -k c3VubGluZW1kcDIwMTgxMQ==  -f global.properties -i database.ora10g.username
+#信息项解密输出
+python server.py -d id  -k c3VubGluZW1kcDIwMTgxMQ==  -f global.properties.fecrypt -i database.ora10g.username
+
+
+
+
+#shell中获取python输出值的方法：
+outputString=`python server.py -d ie  -k c3VubGluZW1kcDIwMTgxMQ==  -f global.properties -i database.ora10g.username`
+echo outputString:${outputString}
+outputFile=`python server.py -d fe   -k c3VubGluZW1kcDIwMTgxMQ==  -f global.properties`
+echo outputFile:$outputFile
+
+
+```
+
+后续会对脚本进行内容补充，主要是增加一些之前为了功能实现而忽略的异常处理和日志登记的内容。
 附[加密算法介绍](https://blog.csdn.net/kamaliang/article/details/6690979)
-附[pycrypto调用方法](https://www.dlitz.net/software/pycrypto/api/current/)
 
