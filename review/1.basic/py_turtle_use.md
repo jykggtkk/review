@@ -196,5 +196,16 @@ turtle.circle(16, 180)
 turtle.fd(40 * 2/3)
 turtle.done()
 ```
+```
+import turtle
+
+for i in range(9):
+    turtle.fd(100)
+    turtle.left(80)
+    i=i+1
+turtle.done()
+```
+
+
 本文参考 [ Python语言程序设计课程](https://www.icourse163.org/course/BIT-268001) 
 更多函数方法使用 参考文章 [python之绘制图形库turtle](https://www.cnblogs.com/bravestarrhu/p/8287261.html)
